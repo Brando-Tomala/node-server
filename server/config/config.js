@@ -16,10 +16,3 @@ if (process.env.NODE_ENV === 'dev') {
 
 
 process.env.URL_DB = urlDB
-    //'
-
-/*
-user: Brando_T
-pass: y3vIJtkfDPE9upoD
-url_conection: mongodb+srv://Brando_T:y3vIJtkfDPE9upoD@cluster0.mbmhh.mongodb.net/cafe
-*/
