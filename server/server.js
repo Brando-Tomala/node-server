@@ -2,12 +2,12 @@ require('./config/config')
 
 const express = require('express')
 const app = express()
-const bodyParser = require('body-parser');
+const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
 app.use(bodyParser.json())
 
-app.use(require('./routes/controller'))
+app.use(require('./routes/index'))
 
 mongoose
     .connect(process.env.URL_DB, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
