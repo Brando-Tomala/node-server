@@ -70,6 +70,8 @@ async function verify(token) {
 
 app.post('/google', async(req, res) => {
     let token = req.body.token;
+    console.log("Token: " + token);
+    console.log("Variable: " + process.env.CLIENT_ID);
     let googleUser = await verify(token).catch(err => {
         return res.status(403).json({
             ok: false,
