@@ -2,7 +2,8 @@ const express = require('express')
 const { OAuth2Client } = require('google-auth-library');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const Usuario = require('../models/usuario')
+const Usuario = require('../models/usuario');
+const usuario = require('../models/usuario');
 
 const app = express()
 
@@ -60,15 +61,77 @@ async function verify(token) {
         //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
     const payload = ticket.getPayload();
-    console.log(payload.name);
-    console.log(payload.email);
-    console.log(payload.picture);
+    const data = {
+        nombre: payload.name,
+        correo: payload.email,
+        img: payload.picture,
+        google: true
+    }
+    return data;
 }
 
-app.post('/google', (req, res) => {
+app.post('/google', async(req, res) => {
     let token = req.body.token;
-    verify(token);
-    return res.json({ token });
+    let googleUser = await verify(token).catch(err => {
+        return res.status(403).json({
+            ok: false,
+            err
+        })
+    });
+
+
+    Usuario.findOne({ correo: googleUser.correo }, (err, userDB) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            })
+        }
+        if (userDB) {
+            if (userDB.google === false) {
+                return res.status(400).json({
+                    ok: false,
+                    err: {
+                        message: "Debe autenticarse de la manera normal"
+                    }
+                })
+            } else {
+                let token = jwt.sign({
+                    usuario: userDB
+                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
+                return res.json({
+                    ok: true,
+                    usuario: userDB,
+                    token
+                });
+            }
+        } else {
+            let user = new Usuario();
+            user.nombre = googleUser.nombre;
+            user.correo = googleUser.correo;
+            user.img = googleUser.img;
+            user.google = true;
+            user.password = bcrypt.hashSync(':::***', 10);
+            user.save((err, userS) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        err
+                    })
+                }
+                let token = jwt.sign({
+                    usuario: userS
+                }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
+                return res.json({
+                    ok: true,
+                    usuario: userS,
+                    token
+                });
+            })
+        }
+    })
 });
 
 
