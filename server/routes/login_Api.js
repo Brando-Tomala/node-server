@@ -59,6 +59,7 @@ async function verify(token) {
         audience: process.env.CLIENT_ID
     });
     const payload = ticket.getPayload();
+    console.log("payload: " + payload);
     const data = {
         nombre: payload.name,
         correo: payload.email,
