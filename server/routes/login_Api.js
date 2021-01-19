@@ -1,4 +1,5 @@
 const express = require('express')
+const { OAuth2Client } = require('google-auth-library');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const Usuario = require('../models/usuario')
@@ -49,11 +50,29 @@ app.post('/login', (req, res) => {
 
 
 
-/**
- * function parseJwt (token) {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace('-', '+').replace('_', '/');
-    return JSON.parse(window.atob(base64));
-};
- */
+const client = new OAuth2Client(process.env.CLIENT_ID);
+
+async function verify(token) {
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
+        // Or, if multiple clients access the backend:
+        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+    });
+    const payload = ticket.getPayload();
+    console.log(payload.name);
+    console.log(payload.email);
+    console.log(payload.picture);
+}
+
+app.post('/google', (req, res) => {
+    let token = req.body.token;
+    verify(token);
+    return res.json({ token });
+});
+
+
+
+
+
 module.exports = app

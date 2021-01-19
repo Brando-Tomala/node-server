@@ -2,10 +2,13 @@ require('./config/config')
 
 const express = require('express')
 const app = express()
+const path = require('path')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
 app.use(bodyParser.json())
+
+app.use(express.static(path.resolve(__dirname, '../public')))
 
 app.use(require('./routes/index'))
 
